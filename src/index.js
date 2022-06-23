@@ -14,55 +14,22 @@ const port = 3000;
 app.use(cors())
 app.use(express.json());
 
-app.get("/posts/:id", async(req,res)=>{
-    let id = req.params.id;
+app.get ('/posts', async (req , res) => {
     let db = await connect();
+    let cursor = await db.collection('posts').find({});
+    let results = await cursor.toArray();
 
-    let doc = await db.collection("posts").findOne({_id: new BSON.ObjectId(id)})
-    console.log(doc);
-    res.json(doc);
-})
+    res.send(results);
+});
 
+app.get ('/rasporedi_BMI', async (req , res) => {
+    let db = await connect();
+    let cursor = await db.collection('rasporedi_BMI').find({});
+    let results = await cursor.toArray();
 
-app.get("/posts", async(req,res)=>{
-    let db = await connect()
-    let query = req.query;
+    res.send(results);
+});
 
-    let selekcija = {}
-
-    if (query.title){
-        selekcija.title = new RegExp(query.title)
-    }
-
-    if(query._any){
-        let pretraga = query._any
-        let terms = pretraga.split(" ")
-
-        let atributi = ["title", "text", "photo"]
-    
-        selekcija = {
-            $and: []
-        }
-    terms.forEach(term => {
-        let or = {
-            $or: []
-        }
-    
-        atributi.forEach(atribut =>{
-            or.$or.push({ [atribut]: new RegExp(term)})
-        })
-
-        selekcija.$and.push(or)
-    }) 
-    }
-
-    console.log("Selekcija", selekcija)
-
-    let cursor = await db.collection("posts").find(selekcija)
-    let results = await cursor.toArray()
-
-    res.json(results)
-})
 
 app.get("/tajna", [auth.verify], (req,res)=>{
    
